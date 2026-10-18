@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ultimate Draft: İlk 11 Kur</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap');
+
+        /* TEMALAR */
+        :root[data-theme="dark"] { --bg-grad-1: #064e3b; --bg-grad-2: #0f172a; --primary: #10b981; --secondary: #3b82f6; --text: #f8fafc; --pitch-color: #064e3b; }
+        :root[data-theme="neon"] { --bg-grad-1: #2e0854; --bg-grad-2: #09090b; --primary: #d946ef; --secondary: #06b6d4; --text: #fdf4ff; --pitch-color: #1e1b4b; }
+        :root[data-theme="gold"] { --bg-grad-1: #422006; --bg-grad-2: #1a0b02; --primary: #fbbf24; --secondary: #d97706; --text: #fef3c7; --pitch-color: #291502; }
+        :root[data-theme="retro"] { --bg-grad-1: #4a044e; --bg-grad-2: #7c2d12; --primary: #f97316; --secondary: #eab308; --text: #ffedd5; --pitch-color: #431407; }
+        :root[data-theme="midnight"] { --bg-grad-1: #020617; --bg-grad-2: #172554; --primary: #60a5fa; --secondary: #818cf8; --text: #e0e7ff; --pitch-color: #0f172a; }
+        :root[data-theme="crimson"] { --bg-grad-1: #450a0a; --bg-grad-2: #000000; --primary: #ef4444; --secondary: #dc2626; --text: #fef2f2; --pitch-color: #2e0202; }
+
+        :root { --card-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+        body { background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2)); color: var(--text); height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; transition: background 0.5s ease; }
+
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; overflow-y: auto; position: relative;}
+        .screen.active { display: flex; }
+
+        .glass-panel { background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); max-width: 450px; width: 100%; margin: auto; }
+
+        h1, h2 { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; text-transform: uppercase; }
+        h1 { font-size: 2.2rem; margin-bottom: 10px; } h2 { font-size: 1.5rem; margin-bottom: 20px; }
+
+        button { width: 100%; padding: 15px; margin-bottom: 12px; border: none; border-radius: 12px; background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; font-weight: 800; font-size: 1rem; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); outline: none; }
+        button:active { transform: scale(0.95); }
+        button.secondary { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); box-shadow: none; }
+        .btn-half { width: 48%; display: inline-block; margin-bottom: 0; }
+        .btn-red { background: linear-gradient(45deg, #ef4444, #b91c1c); }
+
+        /* Saha */
+        #game-pitch { width: 100%; max-width: 450px; height: 75vh; background: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px), var(--pitch-color); background-size: 33.3% 20%; border: 2px solid var(--glass-border); border-radius: 15px; position: relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); margin-top: 10px; flex-shrink: 0; }
+        .pitch-line-center { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.2); }
+        .pitch-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; }
+
+        /* Çıkış Butonu (Desenli X) */
+        .exit-btn {
+            position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; border-radius: 12px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(0,0,0,0.5)); border: 2px solid #ef4444; color: #ef4444;
+            display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900;
+            cursor: pointer; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); z-index: 50; transition: transform 0.2s, background 0.2s;
+        }
+        .exit-btn:active { transform: scale(0.9); background: #ef4444; color: white;}
+
+        /* Modal Ekranları */
+        .overlay-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
+
+        /* Saha İçi Oyuncu Slotu */
+        .player-slot { width: 70px; height: 95px; background: rgba(0, 0, 0, 0.6); border: 2px dashed rgba(255, 255, 255, 0.4); border-radius: 10px; position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; cursor: pointer; transition: all 0.3s; padding-bottom: 5px; z-index: 10; }
+        .player-slot.filled { border: 2px solid var(--primary); background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
+        
+        /* FIFA KALKAN ŞEKLİ KESİMİ */
+        .shield-clip { clip-path: polygon(10% 0, 90% 0, 100% 20%, 100% 80%, 50% 100%, 0 80%, 0 20%); object-fit: cover; object-position: center 15%; background: #374151;}
+        .slot-img { position: absolute; top: -8px; width: 60px; height: 60px; display: none; border: none; }
+        .player-slot.filled .slot-img { display: block; }
+        
+        .slot-pos { position: absolute; top: 2px; left: 4px; font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.5); z-index: 2; text-shadow: 1px 1px 2px black;}
+        .player-slot.filled .slot-pos { color: var(--primary); }
+        .slot-rating { font-size: 1.1rem; font-weight: 900; color: #fbbf24; z-index: 2; text-shadow: 1px 1px 2px black; margin-top: 38px;}
+        .slot-name { font-size: 0.55rem; font-weight: 800; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 95%; text-align: center; z-index: 2; text-shadow: 1px 1px 2px black;}
+
+        /* Draft Modalı (3D Kartlar) */
+        #draft-modal { z-index: 100; }
+        .draft-cards { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; padding: 20px; perspective: 1000px; }
+        
+        /* 3D DÖNÜŞ KART YAPISI */
+        .draft-card { width: 115px; height: 180px; cursor: pointer; position: relative; }
+        .draft-card:active { transform: scale(0.95); }
+        
+        /* YAVAŞ DÖNÜŞ VE ANİMASYON */
+        .card-inner { width: 100%; height: 100%; transition: transform 1.5s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; position: relative; }
+        .card-inner.flipped { transform: rotateY(180deg); }
+        
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; border: 2px solid var(--glass-border); overflow: hidden; }
+        
+        /* Gizli Ön Yüz */
+        .card-front { background: repeating-linear-gradient(45deg, #111, #111 10px, #222 10px, #222 20px); border-color: #fbbf24; justify-content: center; }
+        .card-front .q-mark { font-size: 4rem; font-weight: 900; color: rgba(251, 191, 36, 0.5); text-shadow: 0 0 20px rgba(251, 191, 36, 0.8); }
+
+        /* Açık Arka Yüz */
+        .card-back { background: linear-gradient(135deg, #1f2937, #030712); transform: rotateY(180deg); }
+        .card-back img { width: 70px; height: 70px; margin-top: 15px; }
+        .card-back .rating { position: absolute; top: 5px; left: 8px; font-size: 1.4rem; font-weight: 900; color: #fbbf24; }
+        .card-back .pos { position: absolute; top: 8px; right: 8px; font-size: 0.8rem; font-weight: bold; color: #94a3b8; }
+        .card-back .name { font-size: 0.65rem; text-align: center; font-weight: 900; margin-top: 5px; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+        .card-back .team-info { font-size: 0.5rem; text-align: center; color: #cbd5e1; font-weight: 600; text-transform: uppercase; margin-top:2px;}
+
+        /* SİLİK'TEN NET'E GEÇİŞ (BLUR & FADE EFEKTİ) */
+        .card-back > * { opacity: 0; filter: blur(10px); transition: opacity 1s ease-out 0.6s, filter 1s ease-out 0.6s; }
+        .card-inner.flipped .card-back > * { opacity: 1; filter: blur(0); }
+        .card-inner.pre-revealed .card-back > * { opacity: 1; filter: blur(0); transition: none; }
+
+        /* Seçim Sonrası Efektleri */
+        .draft-card.selected .card-back { border-color: var(--primary); box-shadow: 0 0 25px var(--primary); }
+        .draft-card.missed-good .card-back { border-color: #ef4444; box-shadow: 0 0 25px #ef4444; }
+        .draft-card.missed-bad .card-back { opacity: 0.5; filter: grayscale(100%); }
+
+        #draft-feedback { font-size: 1.2rem; font-weight: 900; margin-top: 10px; height: 30px; text-transform: uppercase; text-align: center;}
+        #draft-confirm-btn { display: none; width: 80%; max-width: 300px; margin-top: 20px; }
+
+        /* YENİ NESİL AYARLAR MENÜSÜ (iOS Toggle Stili) */
+        .list-container { max-height: 400px; overflow-y: auto; width: 100%; text-align: left; scrollbar-width: none; }
+        .list-container::-webkit-scrollbar { display: none; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 1rem; font-weight: 600;}
+        select { background: rgba(0,0,0,0.5); color: white; padding: 8px; border-radius: 8px; border: 1px solid var(--glass-border); outline: none; font-weight: bold;}
+        
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .history-item { background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size:0.9rem;}
+        .credit { font-size: 0.85rem; color: #fbbf24; font-weight: 900; margin-top: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); text-align: center;}
+    </style>
+</head>
+<body>
+    <!-- ANA MENÜ -->
+    <div id="screen-main" class="screen active" style="justify-content: center;">
+        <div class="glass-panel">
+            <h1>ULTIMATE DRAFT</h1>
+            <p>Gerçekçi FIFA Reytingleri, Sert Aksiyon Müziği ve Riskli Kapalı Kartlar!</p>
+            <button onclick="goToFormation()">YENİ OYUN</button>
+            <button class="secondary" onclick="showScreen('screen-history')">SKOR GEÇMİŞİ</button>
+            <button class="secondary" onclick="showScreen('screen-settings')">AYARLAR & TEMALAR</button>
+            <button class="secondary" onclick="showScreen('screen-how-to')">NASIL OYNANIR?</button>
+            <div class="credit">PRODUCT BY IBBAYHAN</div>
+        </div>
+    </div>
+
+    <!-- NASIL OYNANIR -->
+    <div id="screen-how-to" class="screen" style="justify-content: center;">
+        <div class="glass-panel">
+            <h2>Nasıl Oynanır?</h2>
+            <div class="list-container" style="font-size: 0.85rem; line-height: 1.6;">
+                <p>1. 20 farklı detaylı dizilişten birini seç.</p>
+                <p>2. Boş bir mevkiye tıkla. (Stoperse sadece stoper gelir! Mevkiler karışmaz.)</p>
+                <p>3. <b>RİSK AL:</b> 3 kart çıkar, sadece 1'i açıktır. Kapalıyı seçersen, kartlar 3D olarak dönerek yüzleşmeni sağlar.</p>
+                <p>4. Resimler özel <b>FIFA Kalkan</b> stilinde kesilmiştir.</p>
+                <p>5. Reytingler FIFA standardındadır. (Arda Güler her zaman 90!)</p>
+                <div class="credit">PRODUCT BY IBBAYHAN</div>
+            </div>
+            <button class="secondary" style="margin-top: 15px;" onclick="showScreen('screen-main')">Geri Dön</button>
+        </div>
+    </div>
+
+    <!-- YENİ NESİL AYARLAR -->
+    <div id="screen-settings" class="screen" style="justify-content: center;">
+        <div class="glass-panel" style="max-width: 450px;">
+            <h2>Ayarlar</h2>
+            <div class="settings-row">
+                <span>Dokunma Sesleri (SFX)</span>
+                <label class="switch"><input type="checkbox" id="setting-sfx" checked onchange="toggleSetting('sfx')"><span class="slider"></span></label>
+            </div>
+            <div class="settings-row">
+                <span>Aksiyon Müziği</span>
+                <label class="switch"><input type="checkbox" id="setting-music" onchange="toggleSetting('music')"><span class="slider"></span></label>
+            </div>
+            <div class="settings-row">
+                <span>Oyun Teması</span>
+                <select id="theme-select" onchange="changeTheme(this.value)">
+                    <option value="dark">Karanlık (Varsayılan)</option>
+                    <option value="neon">Neon Cyberpunk</option>
+                    <option value="gold">Premium Gold</option>
+                    <option value="retro">8-Bit Retro</option>
+                    <option value="midnight">Gece Mavisi</option>
+                    <option value="crimson">Kan Kırmızı</option>
+                </select>
+            </div>
+            <div class="settings-row" style="border:none;">
+                <span>Geçmişi Temizle</span>
+                <button class="secondary" style="width: auto; padding: 5px 15px; margin: 0; color:#ef4444; border-color:#ef4444;" onclick="clearHistory()">Sil</button>
+            </div>
+            <button class="secondary" style="margin-top: 25px;" onclick="showScreen('screen-main')">Geri Dön</button>
+        </div>
+    </div>
+
+    <!-- GEÇMİŞ -->
+    <div id="screen-history" class="screen" style="justify-content: center;">
+        <div class="glass-panel">
+            <h2>Skor Geçmişi</h2>
+            <div id="history-list" class="list-container"></div>
+            <button class="secondary" style="margin-top: 15px;" onclick="showScreen('screen-main')">Geri Dön</button>
+        </div>
+    </div>
+
+    <!-- DİZİLİŞ SEÇİMİ -->
+    <div id="screen-formation" class="screen">
+        <div class="glass-panel" style="max-width: 500px; height: 90vh; display:flex; flex-direction:column;">
+            <h2>Diziliş Seç</h2>
+            <div id="formation-list" class="list-container" style="flex-grow: 1;"></div>
+            <button class="secondary" style="margin-top: 15px; flex-shrink: 0;" onclick="showScreen('screen-main')">İptal</button>
+        </div>
+    </div>
+
+    <!-- OYUN EKRANI -->
+    <div id="screen-game" class="screen">
+        <div class="exit-btn" onclick="showExitModal()">✖</div>
+        <h2 id="ingame-formation-name" style="margin-bottom: 5px; font-size: 1.2rem;">4-3-3</h2>
+        <div id="game-pitch">
+            <div class="pitch-line-center"></div><div class="pitch-circle"></div>
+        </div>
+        <button id="finish-btn" style="display:none; position:absolute; bottom:20px; width:80%; max-width:300px; z-index:50;" onclick="finishGame()">Takımı Onayla!</button>
+        
+        <!-- Çıkış Modalı -->
+        <div id="exit-modal" class="overlay-modal">
+            <div class="glass-panel" style="max-width: 350px;">
+                <h2 style="color:white; font-size: 1.2rem;">Oyundan Çıkış</h2>
+                <p style="color:#cbd5e1; margin-bottom: 25px;">Çıkmak istediğinize emin misiniz? Seçimleriniz kaybolacak.</p>
+                <div style="display:flex; justify-content: space-between;">
+                    <button class="btn-half secondary" onclick="closeExitModal()">HAYIR</button>
+                    <button class="btn-half btn-red" onclick="quitGame()">EVET</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Draft Modalı (3D Kartlar) -->
+        <div id="draft-modal" class="overlay-modal">
+            <h2 style="color: white; margin-bottom: 5px;">Kartını Seç</h2>
+            <p style="color: #fbbf24; font-size:0.8rem; margin-bottom: 15px;">Garanti açık kart mı, büyük risk mi?</p>
+            <div id="draft-options" class="draft-cards"></div>
+            <div id="draft-feedback"></div>
+            <button id="draft-confirm-btn" onclick="confirmCardSelection()">TAKIMA EKLE</button>
+        </div>
+    </div>
+
+    <!-- SONUÇ EKRANI -->
+    <div id="screen-result" class="screen" style="justify-content: center;">
+        <div class="glass-panel">
+            <div class="credit" style="margin-bottom: 20px;">PRODUCT BY IBBAYHAN</div>
+            <h2>DRAFT TAMAMLANDI!</h2>
+            <p style="margin-bottom: 5px;">Takım Ortalaması:</p>
+            <div id="final-avg" style="font-size: 4.5rem; font-weight: 900; color: var(--primary); text-shadow: 0 0 20px var(--primary);">85</div>
+            <button onclick="showScreen('screen-main')" style="margin-top:20px;">Ana Menüye Dön</button>
+            <button class="secondary" onclick="goToFormation()">Tekrar Oyna</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GERÇEKÇİ FIFA REYTİNG MOTORU ---
+        const topPlayers = {
+            "Arda Güler": 90, // ÖZEL İSTEK! Her zaman 90.
+            "Erling Haaland": 91, "Kylian Mbappé": 91, "Jude Bellingham": 90, "Vinícius Júnior": 90, 
+            "Rodri": 91, "Kevin De Bruyne": 91, "Mohamed Salah": 89, "Harry Kane": 90, "Victor Osimhen": 88, 
+            "Martin Ødegaard": 89, "Bukayo Saka": 88, "Virgil van Dijk": 89, "Alisson Becker": 89, "Ederson": 88, 
+            "Thibaut Courtois": 90, "Lamine Yamal": 86, "Ferdi Kadıoğlu": 82, "Kerem Aktürkoğlu": 80, 
+            "Barış Alper Yılmaz": 81, "Mauro Icardi": 84, "Edin Dzeko": 83, "Fred": 83, "Dries Mertens": 82,
+            "Sebastian Szymański": 81, "Gedson Fernandes": 81, "Rafa Silva": 83, "Ciro Immobile": 85,
+            "Robert Lewandowski": 88, "Florian Wirtz": 88, "Jamal Musiala": 88, "Lautaro Martínez": 89,
+            "Rafael Leão": 87, "Khvicha Kvaratskhelia": 87
+        };
+
+        const teamTiers = {
+            "REAL MADRID": 84, "MANCHESTER CITY": 84, "ARSENAL": 83, "LİVERPOOL": 83, "BARCELONA": 83, "BAYERN MÜNİH": 83, "INTER": 83, "PARIS SAINT-GERMAIN (PSG)": 83,
+            "JUVENTUS": 82, "AC MILAN": 82, "ATLETICO MADRID": 82, "BORUSSIA DORTMUND": 82, "BAYER LEVERKUSEN": 82,
+            "TOTTENHAM HOTSPUR": 81, "MANCHESTER UNITED": 81, "CHELSEA": 81, "NEWCASTLE UNITED": 81, "NAPOLI": 81, "RB LEIPZIG": 81,
+            "ASTON VILLA": 80, "AS ROMA": 80, "ATALANTA": 80, "LAZIO": 80, "OLYMPIQUE LYONNAIS": 80, "OLYMPIQUE DE MARSEILLE": 80,
+            "GALATASARAY": 77, "FENERBAHÇE": 77, "BEŞİKTAŞ": 76,
+            "TRABZONSPOR": 74, "SAMSUNSPOR": 71, "KOCAELİSPOR": 68
+        };
+        
+        function generateRating(name, team) {
+            if(topPlayers[name]) return topPlayers[name];
+            let base = teamTiers[team] || 74; 
+            let hash = 0; for(let i=0; i<name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+            let variation = (Math.abs(hash) % 9) - 4; // -4 ile +4 arası doğal değişim
+            return base + variation;
+        }
+
+        // --- SIFIR TOLERANS MEVKİ SİSTEMİ ---
+        const posMap = {"KL":"GK", "STP":"CB", "SLB":"LB", "SĞB":"RB", "DOS":"CDM", "MO":"CM", "OOS":"CAM", "SĞK":"RW", "SLK":"LW", "SNT":"ST"};
+        const posGroups = { 
+            "ST": ["ST"], "LW": ["LW", "LM"], "RW": ["RW", "RM"], "CAM": ["CAM"], 
+            "CM": ["CM"], "CDM": ["CDM"], "LB": ["LB", "LWB"], "RB": ["RB", "RWB"], 
+            "CB": ["CB"], "GK": ["GK"] 
+        };
+
+        let playersData = [];
+        
+        // --- TAM VERİTABANI (DEDİĞİN TÜM OYUNCULAR) ---
+        const rawData = `
+PREMIER LEAGUE
+ARSENAL
+KL: David Raya, Kepa Arrizabalaga
+STP: William Saliba, Gabriel Magalhães
+SLB: Riccardo Calafiori, Piero Hincapié
+SĞB: Ben White, Jurriën Timber
+DOS: Declan Rice, Christian Nørgaard, Martín Zubimendi
+MO: Mikel Merino
+OOS: Martin Ødegaard, Eberechi Eze
+SĞK: Bukayo Saka, Noni Madueke
+SLK: Gabriel Martinelli, Leandro Trossard
+SNT: Viktor Gyökeres, Kai Havertz, Gabriel Jesus
+ASTON VILLA
+KL: Emiliano Martínez, Marco Bizot
+STP: Ezri Konsa, Tyrone Mings, Victor Lindelöf, Pau Torres
+SLB: Ian Maatsen, Lucas Digne
+SĞB: Matty Cash
+DOS: Boubacar Kamara, Amadou Onana
+MO: Youri Tielemans, Douglas Luiz, Ross Barkley
+OOS: Morgan Rogers, Emiliano Buendía
+SĞK: Leon Bailey, Jadon Sancho
+SLK: Harvey Elliott
+SNT: Ollie Watkins, Tammy Abraham
+BRENTFORD
+KL: Caoimhín Kelleher, Hákon Valdimarsson, Ellery Balcombe
+STP: Nathan Collins, Ethan Pinnock, Sepp van den Berg, Kristoffer Ajer
+SLB: Rico Henry
+SĞB: Aaron Hickey
+DOS: Vitaly Janelt
+MO: Jordan Henderson, Mathias Jensen, Yehor Yarmoliuk
+OOS: Mikkel Damsgaard, Fabio Carvalho
+SĞK: Dango Ouattara, Reiss Nelson
+SLK: Kevin Schade, Keane Lewis-Potter
+SNT: Igor Thiago
+BRIGHTON
+KL: Bart Verbruggen, Jason Steele, Carl Rushworth
+STP: Lewis Dunk, Jan Paul van Hecke, Adam Webster, Olivier Boscagli
+SLB: Maxim De Cuyper, Ferdi Kadıoğlu
+SĞB: Joel Veltman
+DOS: Mats Wieffer
+MO: James Milner, Matt O'Riley, Yasin Ayari, Pascal Groß
+OOS: Georginio Rutter
+SĞK: Solly March
+SLK: Kaoru Mitoma
+SNT: Danny Welbeck
+TOTTENHAM HOTSPUR
+KL: Guglielmo Vicario
+STP: Tosin Adarabioyo, Marcos Senesi, Jan Paul van Hecke
+SLB: Destiny Udogie, Andy Robertson
+SĞB: Pedro Porro
+DOS: Sandro Tonali
+MO: Archie Gray, Lucas Bergvall, Conor Gallagher, Mateus Fernandes
+OOS: Xavi Simons, James Maddison
+SĞK: Mohammed Kudus, Savinho
+SLK: Mathys Tel, Mykhailo Mudryk
+SNT: Dominic Solanke, Omar Marmoush
+LİVERPOOL
+KL: Alisson Becker, Giorgi Mamardashvili
+STP: Virgil van Dijk, Ibrahima Konaté, Joe Gomez
+SLB: Milos Kerkez
+SĞB: Jeremie Frimpong, Conor Bradley
+DOS: Ryan Gravenberch
+MO: Alexis Mac Allister, Dominik Szoboszlai, Curtis Jones
+OOS: Florian Wirtz
+SĞK: Mohamed Salah
+SLK: Cody Gakpo
+SNT: Alexander Isak, Hugo Ekitike
+MANCHESTER CITY
+KL: Gianluigi Donnarumma, Ederson
+STP: Rúben Dias, John Stones, Joško Gvardiol
+SLB: Nico O'Reilly
+SĞB: Matheus Nunes
+DOS: Rodri
+MO: Mateo Kovačić, Tijjani Reijnders, Bernardo Silva
+OOS: Phil Foden, Rayan Cherki
+SĞK: Savinho
+SLK: Jérémy Doku
+SNT: Erling Haaland, Omar Marmoush
+MANCHESTER UNITED
+KL: André Onana, Altay Bayındır
+STP: Matthijs de Ligt, Lisandro Martínez, Harry Maguire
+SLB: Luke Shaw, Patrick Dorgu
+SĞB: Diogo Dalot, Noussair Mazraoui
+DOS: Manuel Ugarte
+MO: Bruno Fernandes, Kobbie Mainoo, Mason Mount
+OOS: Bruno Fernandes
+SĞK: Amad Diallo
+SLK: Alejandro Garnacho
+SNT: Rasmus Højlund, Joshua Zirkzee, Benjamin Šeško
+CHELSEA
+KL: Robert Sánchez, Filip Jørgensen
+STP: Levi Colwill, Wesley Fofana, Tosin Adarabioyo
+SLB: Marc Cucurella, Jorrel Hato
+SĞB: Reece James, Malo Gusto
+DOS: Moisés Caicedo
+MO: Enzo Fernández, Roméo Lavia
+OOS: Cole Palmer
+SĞK: Pedro Neto, Estêvão
+SLK: Jamie Gittens, Mykhailo Mudryk
+SNT: João Pedro, Liam Delap
+NEWCASTLE UNITED
+KL: Nick Pope, Aaron Ramsdale
+STP: Sven Botman, Fabian Schär, Dan Burn
+SLB: Lewis Hall
+SĞB: Kieran Trippier, Tino Livramento
+DOS: Sandro Tonali, Bruno Guimarães
+MO: Joelinton, Joe Willock
+OOS: Jacob Ramsey
+SĞK: Anthony Elanga
+SLK: Harvey Barnes
+SNT: Alexander Isak, Nick Woltemade
+NOTTINGHAM FOREST
+KL: Matz Sels
+STP: Murillo, Nikola Milenković
+SLB: Neco Williams
+SĞB: Ola Aina
+DOS: Ibrahim Sangaré
+MO: Elliot Anderson, Nicolás Domínguez
+OOS: Morgan Gibbs-White
+SĞK: Callum Hudson-Odoi
+SLK: Dan Ndoye
+SNT: Chris Wood
+WEST HAM UNITED
+KL: Alphonse Areola
+STP: Max Kilman, Jean-Clair Todibo
+SLB: Emerson Palmieri
+SĞB: Aaron Wan-Bissaka
+DOS: Edson Álvarez
+MO: Tomáš Souček, Guido Rodríguez
+OOS: Lucas Paquetá
+SĞK: Jarrod Bowen
+SLK: Crysencio Summerville
+SNT: Niclas Füllkrug
+FULHAM
+KL: Bernd Leno
+STP: Calvin Bassey, Joachim Andersen
+SLB: Antonee Robinson
+SĞB: Kenny Tete
+DOS: Sander Berge
+MO: Sasa Lukic, Alex Iwobi
+OOS: Emile Smith Rowe
+SĞK: Harry Wilson
+SLK: Adama Traoré
+SNT: Raúl Jiménez
+BOURNEMOUTH
+KL: Djordje Petrović, Fraser Forster
+STP: Marcos Senesi, Bafodé Diakité, James Hill
+SLB: Adrien Truffert
+SĞB: Adam Smith
+DOS: Tyler Adams, Lewis Cook
+MO: Alex Scott, Ryan Christie
+OOS: Justin Kluivert
+SĞK: David Brooks, Marcus Tavernier
+SLK: Amine Adli
+SNT: Evanilson, Enes Ünal
+EVERTON
+KL: Jordan Pickford
+STP: James Tarkowski, Jarrad Branthwaite
+SLB: Vitaliy Mykolenko
+SĞB: Nathan Patterson
+DOS: Idrissa Gueye
+MO: James Garner, Tim Iroegbunam
+OOS: Dwight McNeil
+SĞK: Jack Grealish
+SLK: Iliman Ndiaye
+SNT: Beto, Thierno Barry
+CRYSTAL PALACE
+KL: Dean Henderson
+STP: Marc Guéhi, Maxence Lacroix
+SLB: Tyrick Mitchell
+SĞB: Daniel Muñoz
+DOS: Jefferson Lerma
+MO: Adam Wharton, Will Hughes
+OOS: Daichi Kamada
+SĞK: Ismaïla Sarr
+SLK: Eberechi Eze
+SNT: Jean-Philippe Mateta
+WOLVERHAMPTON WANDERERS
+KL: José Sá
+STP: Santiago Bueno, Toti Gomes
+SLB: Rayan Aït-Nouri
+SĞB: Matt Doherty
+DOS: João Gomes
+MO: André, Mario Lemina
+OOS: Pablo Sarabia
+SĞK: Rodrigo Gomes
+SLK: Hwang Hee-chan
+SNT: Jørgen Strand Larsen
+LEEDS UNITED
+KL: Illan Meslier
+STP: Joe Rodon, Pascal Struijk
+SLB: Junior Firpo
+SĞB: Jayden Bogle
+DOS: Ethan Ampadu
+MO: Ao Tanaka, Ilia Gruev
+OOS: Brenden Aaronson
+SĞK: Daniel James
+SLK: Wilfried Gnonto
+SNT: Dominic Calvert-Lewin, Joel Piroe
+BURNLEY
+KL: James Trafford
+STP: Maxime Estève, Joe Worrall
+SLB: Lucas Pires
+SĞB: Kyle Walker
+DOS: Josh Cullen
+MO: Josh Brownhill, Lesley Ugochukwu
+OOS: Hannibal Mejbri
+SĞK: Jaidon Anthony
+SLK: Marcus Edwards
+SNT: Lyle Foster, Zian Flemming
+SUNDERLAND
+KL: Robin Roefs
+STP: Daniel Ballard, Omar Alderete
+SLB: Dennis Cirkin
+SĞB: Trai Hume
+DOS: Granit Xhaka
+MO: Noah Sadiki, Jobe Bellingham
+OOS: Enzo Le Fée
+SĞK: Patrick Roberts
+SLK: Romaine Mundle
+SNT: Wilson Isidor
+HULL CITY
+KL: Ivor Pandur
+STP: Charlie Hughes, Alfie Jones
+SLB: Ryan Giles
+SĞB: Lewie Coyle
+DOS: Regan Slater
+MO: Matt Crooks
+OOS: Kieran Dowell
+SĞK: David Akintola
+SLK: Liam Millar
+SNT: Oli McBurnie
+IPSWICH TOWN
+KL: Alex Palmer, David Button
+STP: Dara O'Shea, Jacob Greaves
+SLB: Leif Davis
+SĞB: Ben Johnson
+DOS: Sam Morsy
+MO: Jens Cajuste, Jack Taylor
+OOS: Conor Chaplin
+SĞK: Wes Burns
+SLK: Jaden Philogene
+SNT: Liam Delap, George Hirst
+COVENTRY CITY
+KL: Carl Rushworth
+STP: Bobby Thomas, Liam Kitching
+SLB: Jake Bidwell
+SĞB: Milan van Ewijk
+DOS: Ben Sheaf
+MO: Matt Grimes
+OOS: Brandon Thomas-Asante
+SĞK: Tatsuhiro Sakamoto
+SLK: Ephron Mason-Clark
+SNT: Haji Wright, Ellis Simms
+LA LIGA
+REAL MADRID
+KL: Thibaut Courtois, Andriy Lunin, Fran González
+STP: Éder Militão, Antonio Rüdiger, Dean Huijsen, Raúl Asencio
+SLB: Álvaro Carreras, Fran García
+SĞB: Dani Carvajal, Trent Alexander-Arnold
+DOS: Aurélien Tchouaméni
+MO: Federico Valverde, Eduardo Camavinga, Arda Güler
+OOS: Jude Bellingham
+SĞK: Rodrygo, Brahim Díaz
+SLK: Vinícius Júnior
+SNT: Kylian Mbappé, Endrick
+BARCELONA
+KL: Joan García, Wojciech Szczęsny, Dominik Livaković
+STP: Pau Cubarsí, Andreas Christensen, Eric García
+SLB: Alejandro Balde, Gerard Martín
+SĞB: Jules Koundé, João Cancelo
+DOS: Marc Bernal, Rodrigo
+MO: Pedri, Gavi, Frenkie de Jong, Fermín López
+OOS: Dani Olmo
+SĞK: Lamine Yamal, Roony Bardghji
+SLK: Raphinha, Karim Adeyemi
+SNT: Gabriel Jesus, Hamza Abdelkarim
+ATLÉTICO MADRID
+KL: Jan Oblak, Juan Musso, Esquivel
+STP: David Hancko, Robin Le Normand, Marc Pubill
+SLB: Álex Grimaldo
+SĞB: Marcos Llorente
+DOS: Johnny Cardoso, Morten Hjulmand
+MO: Koke, Pablo Barrios, Obed Vargas, Rodrigo Mendoza
+OOS: Kang-in Lee, Álex Baena
+SĞK: Giuliano Simeone
+SLK: Ademola Lookman
+SNT: Julián Álvarez, Alexander Sørloth, Jonathan David
+ATHLETIC BILBAO
+KL: Unai Simón, Julen Agirrezabala
+STP: Dani Vivian, Aitor Paredes, Yeray Álvarez
+SLB: Yuri Berchiche
+SĞB: Óscar de Marcos, Andoni Gorosabel
+DOS: Iñigo Ruiz de Galarreta
+MO: Mikel Jauregizar, Beñat Prados
+OOS: Oihan Sancet
+SĞK: Iñaki Williams
+SLK: Nico Williams, Álex Berenguer
+SNT: Gorka Guruzeta, Maroan Sannadi
+REAL BETIS
+KL: Álvaro Valles, Adrián
+STP: Diego Llorente, Marc Bartra, Natan
+SLB: Ricardo Rodríguez
+SĞB: Héctor Bellerín, Aitor Ruibal
+DOS: Marc Roca
+MO: Sergi Altimira, Pablo Fornals
+OOS: Isco, Giovani Lo Celso
+SĞK: Antony
+SLK: Abde Ezzalzouli
+SNT: Cédric Bakambu, Cucho Hernández
+REAL SOCIEDAD
+KL: Álex Remiro, Unai Marrero
+STP: Igor Zubeldia, Jon Martín
+SLB: Aihen Muñoz, Sergio Gómez
+SĞB: Hamari Traoré
+DOS: Martín Zubimendi
+MO: Brais Méndez, Beñat Turrientes
+OOS: Luka Sučić
+SĞK: Takefusa Kubo
+SLK: Ander Barrenetxea
+SNT: Mikel Oyarzabal, Orri Óskarsson
+VILLARREAL
+KL: Luiz Júnior, Diego Conde
+STP: Pau Navarro, Logan Costa, Juan Foyth
+SLB: Alfonso Pedraza, Sergi Cardona
+SĞB: Kiko Femenía
+DOS: Pape Gueye
+MO: Dani Parejo, Santi Comesaña
+OOS: Álex Baena
+SĞK: Ilias Akhomach
+SLK: Yeremy Pino
+SNT: Gerard Moreno, Ayoze Pérez, Nicolas Pépé
+VALENCIA
+KL: Giorgi Mamardashvili, Stole Dimitrievski
+STP: Cristhian Mosquera, César Tárrega
+SLB: José Gayà
+SĞB: Thierry Correia
+DOS: Pepelu
+MO: Javi Guerra, André Almeida
+OOS: Diego López
+SĞK: Fran Pérez
+SLK: Luis Rioja
+SNT: Hugo Duro, Umar Sadiq
+SEVILLA
+KL: Ørjan Nyland, Álvaro Fernández
+STP: Loïc Badé, Nemanja Gudelj, Kike Salas
+SLB: Adrià Pedrosa
+SĞB: Juanlu Sánchez
+DOS: Lucien Agoumé
+MO: Djibril Sow, Manu Bueno
+OOS: Suso
+SĞK: Dodi Lukébakio
+SLK: Chidera Ejuke
+SNT: Isaac Romero, Akor Adams
+CELTA VIGO
+KL: Vicente Guaita, Iván Villar
+STP: Carl Starfelt, Marcos Alonso
+SLB: Mihailo Ristić
+SĞB: Óscar Mingueza
+DOS: Fran Beltrán
+MO: Ilaix Moriba, Hugo Sotelo
+OOS: Iago Aspas
+SĞK: Franco Cervi
+SLK: Williot Swedberg
+SNT: Borja Iglesias, Ferran Jutglà
+GETAFE
+KL: David Soria, Jiri Letacek
+STP: Djené, Abdel Abqar, Youssef Sazonov
+SLB: Johan Mojica
+SĞB: Davinchi
+DOS: Mario Martín
+MO: Nemanja Gudelj, Ramon Terrats, Uche
+OOS: Francho Serrano, Risco
+SĞK: Juanmi
+SLK: Adrián Liso
+SNT: Borja Mayoral, Martín Satriano, Enes Ünal
+OSASUNA
+KL: Sergio Herrera, Aitor Fernández
+STP: Alejandro Catena, David García
+SLB: Juan Cruz
+SĞB: Jesús Areso
+DOS: Lucas Torró
+MO: Jon Moncayola, Aimar Oroz
+OOS: Rubén García
+SĞK: Kike Barja
+SLK: Bryan Zaragoza
+SNT: Ante Budimir, Raúl García
+DEPORTIVO ALAVÉS
+KL: Antonio Sivera, Jesús Owono
+STP: Abdelkabir Abqar, Rafa Marín
+SLB: Manu Sánchez
+SĞB: Nahuel Tenaglia
+DOS: Antonio Blanco
+MO: Ander Guevara, Carlos Benavídez
+OOS: Carles Aleñá
+SĞK: Carlos Vicente
+SLK: Abde Rebbach
+SNT: Kike García, Toni Martínez
+ESPANYOL
+KL: Joan García, Fernando Pacheco
+STP: Leandro Cabrera, Marash Kumbulla
+SLB: Brian Oliván
+SĞB: Omar El Hilali
+DOS: José Gragera
+MO: Pol Lozano, Edu Expósito
+OOS: Javi Puado
+SĞK: Antoniu Roca
+SLK: Pere Milla
+SNT: Roberto Fernández, Kike García
+RAYO VALLECANO
+KL: Augusto Batalla, Dani Cárdenas
+STP: Florian Lejeune, Abdul Mumin
+SLB: Pep Chavarría
+SĞB: Andrei Rațiu
+DOS: Pathé Ciss
+MO: Óscar Valentín, Unai López
+OOS: Isi Palazón
+SĞK: Jorge de Frutos
+SLK: Álvaro García
+SNT: Sergio Camello, Randy Nteka
+ELCHE
+KL: Matías Dituro, Édgar Badía
+STP: Pedro Bigas, David Affengruber
+SLB: Carlos Clerc
+SĞB: Josan
+DOS: John Chetauya
+MO: Aleix Febas, Nico Castro
+OOS: Nicolás Fernández
+SĞK: Josan
+SLK: Tete Morente
+SNT: Mourad El Ghezouani, Rafa Mir
+LEVANTE
+KL: Andrés Fernández, Pablo Campos
+STP: Unai Elgezabal, Adrián de la Fuente
+SLB: Manu Sánchez
+SĞB: Xavi Grande
+DOS: Oriol Rey
+MO: Pablo Martínez, Sergio Lozano
+OOS: Carlos Álvarez
+SĞK: Iván Romero
+SLK: José Luis Morales
+SNT: Roger Brugué, Dani Gómez
+RACING SANTANDER
+KL: Jokin Ezkieta, Miquel Parera
+STP: Manu Hernando, Rubén Alves
+SLB: Saúl García
+SĞB: Marco Sangalli
+DOS: Íñigo Sainz-Maza
+MO: Íñigo Vicente, Aritz Aldasoro
+OOS: Pablo Rodríguez
+SĞK: Andrés Martín
+SLK: Suleiman Camara
+SNT: Juan Carlos Arana, Asier Villalibre
+MÁLAGA
+KL: Alfonso Herrero, Carlos López
+STP: Nelson Monte, Juande Rivas
+SLB: Víctor García
+SĞB: Jokin Gabilondo
+DOS: Luismi Sánchez
+MO: Dani Lorenzo, Ramón Enríquez
+OOS: David Larrubia
+SĞK: Kevin Villodres
+SLK: Haitam Abaida
+SNT: Dioni, Adrián Niño
+GIRONA
+KL: Paulo Gazzaniga, Juan Carlos
+STP: Daley Blind, David López
+SLB: Miguel Gutiérrez
+SĞB: Arnau Martínez
+DOS: Axel Witsel
+MO: Iván Martín, Yangel Herrera
+OOS: Portu
+SĞK: Viktor Tsygankov
+SLK: Bryan Gil
+SNT: Abel Ruiz, Bojan Miovski
+SERIE A
+INTER
+KL: Yann Sommer, Josep Martínez
+STP: Alessandro Bastoni, Francesco Acerbi, Benjamin Pavard
+SLB: Federico Dimarco, Carlos Augusto
+SĞB: Denzel Dumfries, Matteo Darmian
+DOS: Hakan Çalhanoğlu
+MO: Nicolò Barella, Davide Frattesi, Piotr Zieliński
+OOS: Henrikh Mkhitaryan
+SĞK: Luis Henrique
+SLK: Marcus Thuram
+SNT: Lautaro Martínez, Ange-Yoan Bonny
+JUVENTUS
+KL: Michele Di Gregorio, Mattia Perin
+STP: Bremer, Federico Gatti, Lloyd Kelly
+SLB: Andrea Cambiaso, Juan Cabal
+SĞB: Pierre Kalulu, João Mário
+DOS: Manuel Locatelli
+MO: Khéphren Thuram, Teun Koopmeiners
+OOS: Kenan Yıldız
+SĞK: Francisco Conceição
+SLK: Edon Zhegrova
+SNT: Dušan Vlahović, Randal Kolo Muani, Nick Woltemade
+AC MILAN
+KL: Mike Maignan, Marco Sportiello
+STP: Fikayo Tomori, Strahinja Pavlović, Malick Thiaw
+SLB: Pervis Estupiñán
+SĞB: Kyle Walker, Emerson Royal
+DOS: Youssouf Fofana
+MO: Tijjani Reijnders, Ruben Loftus-Cheek, Yunus Musah
+OOS: Christian Pulisic
+SĞK: Samuel Chukwueze
+SLK: Rafael Leão, Noah Okafor
+SNT: Santiago Giménez, Tammy Abraham
+NAPOLI
+KL: Alex Meret, Vanja Milinković-Savić
+STP: Alessandro Buongiorno, Amir Rrahmani, Sam Beukema
+SLB: Leonardo Spinazzola, Mathías Olivera
+SĞB: Giovanni Di Lorenzo, Pasquale Mazzocchi
+DOS: Stanislav Lobotka
+MO: Scott McTominay, André-Frank Zambo Anguissa, Billy Gilmour
+OOS: Kevin De Bruyne
+SĞK: Matteo Politano, David Neres
+SLK: Noa Lang, Alisson Santos
+SNT: Rasmus Højlund, Lorenzo Lucca
+AS ROMA
+KL: Mile Svilar, Pierluigi Gollini
+STP: Gianluca Mancini, Evan Ndicka, Mario Hermoso
+SLB: Angeliño, Anass Salah-Eddine
+SĞB: Devyne Rensch, Wesley
+DOS: Bryan Cristante
+MO: Manu Koné, Niccolò Pisilli
+OOS: Lorenzo Pellegrini, Rodrigo Mora
+SĞK: Matías Soulé
+SLK: Paulo Dybala
+SNT: Donyell Malen, Artem Dovbyk
+ATALANTA
+KL: Marco Carnesecchi, Rui Patrício
+STP: Isak Hien, Berat Djimsiti, Odilon Kossounou
+SLB: Davide Zappacosta
+SĞB: Raoul Bellanova
+DOS: Éderson
+MO: Marten de Roon, Mario Pašalić
+OOS: Lazar Samardžić
+SĞK: Charles De Ketelaere
+SLK: Ademola Lookman
+SNT: Gianluca Scamacca, Mateo Retegui
+LAZIO
+KL: Ivan Provedel, Christos Mandas
+STP: Alessio Romagnoli, Mario Gila, Nicolò Casale
+SLB: Luca Pellegrini
+SĞB: Adam Marušić
+DOS: Nicolò Rovella
+MO: Matteo Guendouzi, Fisayo Dele-Bashiru
+OOS: Mattia Zaccagni
+SĞK: Gustav Isaksen
+SLK: Pedro
+SNT: Andrea Pinamonti, Valentín Castellanos
+BOLOGNA
+KL: Łukasz Skorupski, Federico Ravaglia
+STP: Jhon Lucumí, Sam Beukema, Torbjørn Heggem
+SLB: Juan Miranda
+SĞB: Emil Holm
+DOS: Remo Freuler
+MO: Lewis Ferguson, Tommaso Pobega
+OOS: Giovanni Fabbian
+SĞK: Riccardo Orsolini
+SLK: Jonathan Rowe
+SNT: Santiago Castro, Thijs Dallinga
+FIORENTINA
+KL: David de Gea, Pietro Terracciano
+STP: Marin Pongračić, Luca Ranieri, Pablo Marí
+SLB: Robin Gosens
+SĞB: Dodô
+DOS: Rolando Mandragora
+MO: Nicolò Fagioli, Cher Ndour
+OOS: Albert Guðmundsson
+SĞK: Andrea Colpani
+SLK: Nicolò Zaniolo
+SNT: Moise Kean, Roberto Piccoli
+COMO
+KL: Jean Butez, Pepe Reina
+STP: Marc-Oliver Kempf, Jacobo Ramón
+SLB: Álex Valle
+SĞB: Ivan Smolčić
+DOS: Máximo Perrone
+MO: Lucas da Cunha, Sergi Roberto
+OOS: Nico Paz
+SĞK: Gabriel Strefezza
+SLK: Assane Diao
+SNT: Patrick Cutrone, Álvaro Morata
+TORINO
+KL: Lucas Perri, Diego Mascardi
+STP: Saúl Coco, Ardian Ismajli, Pietro Comuzzo
+SLB: Cristiano Biraghi, Ricardo Rodríguez
+SĞB: Nathan Patterson, Rafik Belghali
+DOS: Emirhan İlkhan
+MO: Rolando Mandragora, Cesare Casadei
+OOS: Nikola Vlašić
+SĞK: Zakaria Aboukhlal
+SLK: Gaetano Oristanio
+SNT: Giovanni Simeone, Ché Adams, Duván Zapata
+UDINESE
+KL: Maduka Okoye, Razvan Sava
+STP: Jaka Bijol, Thomas Kristensen
+SLB: Jordan Zemura
+SĞB: Kingsley Ehizibue
+DOS: Jesper Karlström
+MO: Sandi Lovrić, Arthur Atta
+OOS: Florian Thauvin
+SĞK: Alexis Sánchez
+SLK: Hassane Kamara
+SNT: Lorenzo Lucca, Keinan Davis
+GENOA
+KL: Nicola Leali, Benjamin Siegrist
+STP: Johan Vásquez, Mattia Bani
+SLB: Aarón Martín
+SĞB: Brooke Norton-Cuffy, Kingsley Ehizibue
+DOS: Morten Frendrup
+MO: Ruslan Malinovskyi, Milan Badelj
+OOS: Junior Messias
+SĞK: Vitinha
+SLK: Caleb Ekuban
+SNT: Andrea Pinamonti
+PARMA
+KL: Zion Suzuki, Edoardo Corvi
+STP: Alessandro Circati, Enrico Delprato
+SLB: Emanuele Valeri
+SĞB: Woyo Coulibaly
+DOS: Mandela Keita
+MO: Adrián Bernabé, Simon Sohm
+OOS: Dennis Man
+SĞK: Matteo Cancellieri
+SLK: Pontus Almqvist
+SNT: Mateo Pellegrino, Ange-Yoan Bonny
+CAGLIARI
+KL: Elia Caprile, Simone Scuffet
+STP: Yerry Mina, Sebastiano Luperto
+SLB: Tommaso Augello
+SĞB: Gabriele Zappa
+DOS: Alessandro Deiola
+MO: Michel Adopo, Ibrahim Sulemana
+OOS: Gianluca Gaetano
+SĞK: Zito Luvumbo
+SLK: Mattia Felici
+SNT: Roberto Piccoli, Sebastiano Esposito
+LECCE
+KL: Wladimiro Falcone, Jasper Samooja
+STP: Federico Baschirotto, Kialonda Gaspar
+SLB: Antonino Gallo
+SĞB: Danilo Veiga
+DOS: Ylber Ramadani
+MO: Lassana Coulibaly, Balthazar Pierret
+OOS: Medon Berisha
+SĞK: Tete Morente
+SLK: Lameck Banda
+SNT: Nikola Krstović, Francesco Camarda
+SASSUOLO
+KL: Arijanet Murić, Giacomo Satalino
+STP: Jay Idzes, Tarik Muharemović
+SLB: Josh Doig
+SĞB: Jeremy Toljan
+DOS: Nemanja Matić
+MO: Kristian Thorstvedt, Ismaël Koné
+OOS: Domenico Berardi
+SĞK: Armand Laurienté
+SLK: Cristian Volpato
+SNT: Andrea Pinamonti, Sebastiano Esposito
+FROSINONE
+KL: Stefano Turati
+STP: Fabio Monterisi, Ilario Monterisi
+SLB: Riccardo Marchizza
+SĞB: Anthony Oyono
+DOS: Luca Mazzitelli
+MO: Marco Brescianini, Giuseppe Caso
+OOS: Matías Soulé
+SĞK: Luigi Canotto
+SLK: Giuseppe Ambrosino
+SNT: Walid Cheddira, Francesco Gelli
+MONZA
+KL: Stefano Turati, Semuel Pizzignacco
+STP: Armando Izzo, Andrea Carboni
+SLB: Georgios Kyriakopoulos
+SĞB: Pedro Pereira
+DOS: Warren Bondo
+MO: Matteo Pessina, Andrea Colpani
+OOS: Gianluca Caprari
+SĞK: Patrick Ciurria
+SLK: Dany Mota
+SNT: Patrick Cutrone, Andrea Petagna
+VENEZIA
+KL: Jesse Joronen, Filip Stanković
+STP: Jay Idzes, Michael Svoboda
+SLB: Ridgeciano Haps
+SĞB: Antonio Candela
+DOS: Tanner Tessmann
+MO: Hans Nicolussi Caviglia, Gianluca Busio
+OOS: Gaetano Oristanio
+SĞK: Dennis Johnsen
+SLK: Mikael Egill Ellertsson
+SNT: Joel Pohjanpalo, Christian Gytkjær
+LEAGUE 1
+PARIS SAINT-GERMAIN (PSG)
+KL: Lucas Chevalier, Matvey Safonov
+STP: Marquinhos, Willian Pacho, Lucas Beraldo
+SLB: Nuno Mendes
+SĞB: Achraf Hakimi
+DOS: João Neves
+MO: Vitinha, Warren Zaïre-Emery, Fabián Ruiz
+OOS: Désiré Doué
+SĞK: Ousmane Dembélé
+SLK: Bradley Barcola
+SNT: Gonçalo Ramos, Ferran Torres
+OLYMPIQUE DE MARSEILLE
+KL: Gerónimo Rulli
+STP: Leonardo Balerdi, Nayef Aguerd
+SLB: Quentin Merlin
+SĞB: Amir Murillo
+DOS: Pierre-Emile Højbjerg
+MO: Adrien Rabiot, Geoffrey Kondogbia
+OOS: Mason Greenwood
+SĞK: Ismaïla Sarr
+SLK: Igor Paixão
+SNT: Amine Gouiri, Pierre-Emerick Aubameyang
+AS MONACO
+KL: Philipp Köhn, Lukas Hradecky
+STP: Thilo Kehrer, Mohammed Salisu
+SLB: Caio Henrique
+SĞB: Vanderson
+DOS: Denis Zakaria
+MO: Lamine Camara, Aladji Bamba
+OOS: Maghnes Akliouche, Aleksandr Golovin
+SĞK: Ansu Fati
+SLK: Takumi Minamino
+SNT: Folarin Balogun, Mika Biereth, Matthis Abline
+OLYMPIQUE LYONNAIS
+KL: Lucas Perri, Rémy Descamps
+STP: Moussa Niakhaté, Clinton Mata
+SLB: Nicolás Tagliafico
+SĞB: Ainsley Maitland-Niles
+DOS: Tyler Morton
+MO: Corentin Tolisso, Tanner Tessmann
+OOS: Rayan Cherki
+SĞK: Malick Fofana
+SLK: Ernest Nuamah
+SNT: Georges Mikautadze, Endrick
+LILLE OSC
+KL: Berke Özer, Vito Mannone
+STP: Alexsandro, Aïssa Mandi
+SLB: Gabriel Gudmundsson
+SĞB: Thomas Meunier
+DOS: Benjamin André
+MO: Hákon Arnar Haraldsson, Ngal'ayel Mukau
+OOS: Angel Gomes
+SĞK: Edon Zhegrova
+SLK: Matias Fernandez-Pardo
+SNT: Jonathan David, Olivier Giroud
+RC LENS
+KL: Brice Samba
+STP: Facundo Medina, Kevin Danso
+SLB: Deiver Machado
+SĞB: Przemysław Frankowski
+DOS: Nampalys Mendy
+MO: Andy Diouf, Adrien Thomasson
+OOS: Angelo Fulgini
+SĞK: Florian Sotoca
+SLK: Wesley Saïd
+SNT: Elye Wahi
+OGC NICE
+KL: Marcin Bułka
+STP: Dante, Jean-Clair Todibo
+SLB: Melvin Bard
+SĞB: Jonathan Clauss
+DOS: Hicham Boudaoui
+MO: Morgan Sanson, Tanguy Ndombele
+OOS: Sofiane Diop
+SĞK: Jérémie Boga
+SLK: Mohamed-Ali Cho
+SNT: Terem Moffi, Evann Guessand
+STADE RENNAIS
+KL: Brice Samba, Steve Mandanda
+STP: Anthony Rouault, Jérémy Jacquet
+SLB: Adrien Truffert
+SĞB: Lorenz Assignon
+DOS: Baptiste Santamaria
+MO: Seko Fofana, Valentin Rongier
+OOS: Ludovic Blas
+SĞK: Arnaud Kalimuendo
+SLK: Amine Gouiri
+SNT: Esteban Lepaul, Breel Embolo
+RC STRASBOURG
+KL: Djordje Petrović
+STP: Mamadou Sarr, Ismaël Doukouré
+SLB: Ben Chilwell
+SĞB: Guéla Doué
+DOS: Andrey Santos
+MO: Habib Diarra, Valentín Barco
+OOS: Diego Moreira
+SĞK: Dilane Bakwa
+SLK: Martial Godo
+SNT: Emanuel Emegha, Conrad Harder
+STADE BRESTOIS
+KL: Marco Bizot
+STP: Brendan Chardonnet, Lilian Brassier
+SLB: Bradley Locko
+SĞB: Kenny Lala
+DOS: Hugo Magnetti
+MO: Pierre Lees-Melou, Mahdi Camara
+OOS: Romain Del Castillo
+SĞK: Romain Faivre
+SLK: Mama Baldé
+SNT: Ludovic Ajorque, Djylian N'Guessan
+TOULOUSE FC
+KL: Guillaume Restes
+STP: Rasmus Nicolaisen, Charlie Cresswell
+SLB: Gabriel Suazo
+SĞB: Djibril Sidibé
+DOS: Cristian Cásseres Jr.
+MO: Vincent Sierro, Niklas Schmidt
+OOS: Yann Gboho
+SĞK: Aron Dønnum
+SLK: Shavy Babicka
+SNT: Frank Magri
+FC NANTES
+KL: Alban Lafont
+STP: Jean-Charles Castelletto, Nicolas Pallois
+SLB: Nicolas Cozza
+SĞB: Marcus Coco
+DOS: Pedro Chirivella
+MO: Douglas Augusto, Johann Lepenant
+OOS: Florent Mollet
+SĞK: Moses Simon
+SLK: Matthis Abline
+SNT: Mostafa Mohamed
+FC LORIENT
+KL: Yvon Mvogo
+STP: Montassar Talbi, Julien Laporte
+SLB: Darlin Yongwa
+SĞB: Théo Le Bris
+DOS: Laurent Abergel
+MO: Jean-Victor Makengo
+OOS: Pablo Pagis
+SĞK: Aiyegun Tosin
+SLK: Eli Junior Kroupi
+SNT: Ibrahima Baldé
+ANGERS SCO
+KL: Yahia Fofana
+STP: Jordan Lefort, Ousmane Camara
+SLB: Florent Hanin
+SĞB: Carlens Arcus
+DOS: Haris Belkebla
+MO: Himad Abdelli, Yassin Belkhdim
+OOS: Farid El Melali
+SĞK: Jim Allevinah
+SLK: Amine Sbaï
+SNT: Esteban Lepaul
+AJ AUXERRE
+KL: Donovan Léon
+STP: Jubal, Sinaly Diomandé
+SLB: Gideon Mensah
+SĞB: Paul Joly
+DOS: Elisha Owusu
+MO: Kévin Danois, Hamed Junior Traorè
+OOS: Gaëtan Perrin
+SĞK: Lassine Sinayoko
+SLK: Gauthier Hein
+SNT: Florian Ayé, Cameron Archer
+LE HAVRE AC
+KL: Arthur Desmas
+STP: Gautier Lloris, Étienne Youte Kinkoué
+SLB: Christopher Opéri
+SĞB: Loïc Négo
+DOS: Abdoulaye Touré
+MO: Yassine Kechta, Rassoul Ndiaye
+OOS: Josué Casimir
+SĞK: Issa Soumaré
+SLK: André Ayew
+SNT: Emmanuel Sabbi
+PARIS FC
+KL: Obed Nkambadio
+STP: Mamadou Mbow, Timothée Kolodziejczak
+SLB: Thibault De Smet
+SĞB: Adama Camara
+DOS: Maxime Lopez
+MO: Ilan Kebbal, Vincent Marchetti
+OOS: Moses Simon
+SĞK: Julien Lopez
+SLK: Alimami Gory
+SNT: Jean-Philippe Krasso, Willem Geubbels
+LE MANS FC
+KL: Ewan Hatfout
+STP: Harold Voyer, Alexandre Lauray
+SLB: Enzo Le Fée
+SĞB: Antoine Rabillard
+DOS: Edwin Quarshie
+MO: Dame Gueye, Antoine Rabillard
+OOS: Thibault Rambaud
+SĞK: Patrick Ouotro
+SLK: Lucas Calodat
+SNT: Nicolas Kocik
+ESTAC TROYES
+KL: Nicolas Lemaitre, Patrick Beach
+STP: Adil Rami, Ismaël Boura
+SLB: Yasser Larouci
+SĞB: Thierno Baldé
+DOS: Rominigue Kouamé
+MO: Xavier Chavalerin, Martin Adeline
+OOS: Rafiki Saïd
+SĞK: Cyriaque Irié
+SLK: Alexis Lefebvre
+SNT: Jérémy Le Douaron
+BUNDESLIGA
+BAYERN MÜNİH
+KL: Manuel Neuer, Jonas Urbig, Sven Ulreich
+STP: Dayot Upamecano, Min-jae Kim, Jonathan Tah, Hiroki Ito
+SLB: Alphonso Davies, Nathaniel Brown
+SĞB: Sacha Boey, Josip Stanišić, Konrad Laimer
+DOS: Joshua Kimmich, Aleksandar Pavlović
+MO: Tom Bischof, Ismael Saibari
+OOS: Jamal Musiala, Lennart Karl
+SĞK: Michael Olise, Serge Gnabry
+SLK: Luis Díaz
+SNT: Harry Kane
+BORUSSIA DORTMUND
+KL: Gregor Kobel, Patrick Drewes, Alexander Meyer, Diant Ramaj
+STP: Nico Schlotterbeck, Waldemar Anton, Ramy Bensebaini
+SLB: Daniel Svensson
+SĞB: Julian Ryerson, Yan Couto
+DOS: Emre Can
+MO: Jobe Bellingham, Felix Nmecha, Marcel Sabitzer, Joey Veerman
+OOS: Carney Chukwuemeka, Ethan Nwaneri, Giannis Konstantelias
+SĞK: Maximilian Beier
+SLK: Fábio Silva
+SNT: Serhou Guirassy, Samuele Inácio
+RB LEIPZIG
+KL: Péter Gulácsi, Maarten Vandevoordt
+STP: Willi Orbán, Castello Lukeba
+SLB: David Raum
+SĞB: Benjamin Henrichs
+DOS: Xaver Schlager
+MO: Amadou Haidara, Nicolas Seiwald
+OOS: Xavi Simons
+SĞK: Antonio Nusa
+SLK: Christoph Baumgartner
+SNT: Loïs Openda, Benjamin Šeško
+BAYER LEVERKUSEN
+KL: Lukáš Hrádecký, Matej Kovář
+STP: Jonathan Tah, Edmond Tapsoba
+SLB: Alejandro Grimaldo
+SĞB: Jeremie Frimpong
+DOS: Granit Xhaka
+MO: Exequiel Palacios, Robert Andrich
+OOS: Florian Wirtz
+SĞK: Nathan Tella
+SLK: Amine Adli
+SNT: Patrik Schick, Victor Boniface
+EINTRACHT FRANKFURT
+KL: Kevin Trapp, Kauã Santos
+STP: Robin Koch, Arthur Theate
+SLB: Nathaniel Brown
+SĞB: Rasmus Kristensen
+DOS: Ellyes Skhiri
+MO: Hugo Larsson, Mario Götze
+OOS: Can Uzun
+SĞK: Ansgar Knauff
+SLK: Jean-Mattéo Bahoya
+SNT: Hugo Ekitike, Jonathan Burkardt
+VfB STUTTGART
+KL: Alexander Nübel, Fabian Bredlow
+STP: Jeff Chabot, Ameen Al-Dakhil
+SLB: Maximilian Mittelstädt
+SĞB: Josha Vagnoman, Lorenz Assignon
+DOS: Atakan Karazor
+MO: Angelo Stiller, Chema Andrés
+OOS: Bilal El Khannouss
+SĞK: Jamie Leweling
+SLK: Chris Führich
+SNT: Deniz Undav, Ermedin Demirović
+SC FREIBURG
+KL: Noah Atubolu, Florian Müller
+STP: Matthias Ginter, Philipp Lienhart
+SLB: Christian Günter
+SĞB: Lukas Kübler
+DOS: Maximilian Eggestein
+MO: Nicolas Höfler, Patrick Osterhage
+OOS: Vincenzo Grifo
+SĞK: Ritsu Doan
+SLK: Eren Dinkçi
+SNT: Lucas Höler, Michael Gregoritsch
+TSG HOFFENHEIM
+KL: Oliver Baumann, Luca Philipp
+STP: Ozan Kabak, Robin Hranáč
+SLB: Bernardo
+SĞB: Vladimir Coufal
+DOS: Leon Avdullahu
+MO: Wouter Burger, Alexander Prass
+OOS: Andrej Kramarić, Muhammed Damar
+SĞK: Bazoumana Touré
+SLK: Fisnik Asllani
+SNT: Adam Hložek, Gift Orban
+WERDER BREMEN
+KL: Karl Hein, Markus Kolke
+STP: Marco Friedl, Niklas Stark
+SLB: Olivier Deman, Felix Agu
+SĞB: Mitchell Weiser
+DOS: Senne Lynen
+MO: Jens Stage, Romano Schmid
+OOS: Marco Grüll
+SĞK: Samuel Mbangula
+SLK: Justin Njinmah
+SNT: Keke Topp, Dawid Kownacki
+BORUSSIA MÖNCHENGLADBACH
+KL: Moritz Nicolas, Tobias Sippel
+STP: Nico Elvedi, Kevin Diks
+SLB: Lukas Ullrich
+SĞB: Joe Scally
+DOS: Philipp Sander
+MO: Florian Neuhaus, Kevin Stöger
+OOS: Giovanni Reyna
+SĞK: Franck Honorat
+SLK: Robin Hack
+SNT: Tim Kleindienst, Shuto Machino
+1. FC UNION BERLIN
+KL: Frederik Rønnow, Carl Klaus, Matheo Raab
+STP: Leopold Querfeld, Marvin Friedrich
+SLB: Derrick Köhn, Tom Rothe
+SĞB: Josip Juranović, Christopher Trimmel
+DOS: Rani Khedira, Aljoscha Kemlein
+MO: András Schäfer, Janik Haberer
+OOS: Woo-yeong Jeong
+SĞK: Tim Skarke
+SLK: Robert Skov
+SNT: Andrej Ilić, Oliver Burke
+1. FSV MAINZ 05
+KL: Robin Zentner, Lasse Rieß
+STP: Stefan Bell, Andreas Hanche-Olsen
+SLB: Phillipp Mwene
+SĞB: Danny da Costa, Silvan Widmer
+DOS: Kaishu Sano, Lennard Maloney
+MO: Nadiem Amiri, Paul Nebel
+OOS: Lee Jae-sung
+SĞK: William Bøving
+SLK: Sheraldo Becker
+SNT: Phillip Tietz, Benedict Hollerbach
+HAMBURGER SV
+KL: Daniel Heuer Fernandes, Sander Tangvik
+STP: Warmed Omari, Jordan Torunarigha
+SLB: Miro Muheim
+SĞB: Bakery Jatta
+DOS: Daniel Elfadli
+MO: Albert Sambi Lokonga, Nicolai Remberg
+OOS: Albert Grønbæk
+SĞK: Jean-Luc Dompé
+SLK: Fabio Baldé
+SNT: Yussuf Poulsen, Rayan Philippe
+1. FC KÖLN
+KL: Marvin Schwäbe, Ron-Robert Zieler
+STP: Joël Schmied, Timo Hübers
+SLB: Leart Paqarada
+SĞB: Sebastian Sebulonsen
+DOS: Tom Krauß
+MO: Ísak Jóhannesson, Eric Martel
+OOS: Luca Waldschmidt
+SĞK: Jan Thielmann
+SLK: Linton Maina
+SNT: Ragnar Ache, Marius Bülter
+FC AUGSBURG
+KL: Finn Dahmen, Nediljko Labrović
+STP: Jeffrey Gouweleeuw, Chrislain Matsima
+SLB: Mads Pedersen
+SĞB: Kevin Mbabu
+DOS: Kristijan Jakić
+MO: Elvis Rexhbeçaj, Arne Maier
+OOS: Alexis Claude-Maurice
+SĞK: Mert Kömür
+SLK: Samuel Essende
+SNT: Phillip Tietz
+VfL WOLFSBURG
+KL: Kamil Grabara, Marius Müller
+STP: Moritz Jenz, Konstantinos Koulierakis
+SLB: Joakim Mæhle
+SĞB: Kilian Fischer
+DOS: Maximilian Arnold
+MO: Bence Dárdai, Mattias Svanberg
+OOS: Lovro Majer
+SĞK: Patrick Wimmer
+SLK: Mohamed Amoura
+SNT: Jonas Wind, Tiago Tomás
+FC ST. PAULI
+KL: Nikola Vasilj, Sören Ahlers
+STP: Eric Smith, Hauke Wahl
+SLB: Philipp Treu
+SĞB: Manolis Saliakas
+DOS: Jackson Irvine
+MO: Carlo Boukhalfa, James Sands
+OOS: Johannes Eggestein
+SĞK: Danel Sinani
+SLK: Elias Saad
+SNT: Andreas Hountondji
+1. FC HEIDENHEIM
+KL: Kevin Müller, Diant Ramaj
+STP: Patrick Mainka, Benedikt Gimber
+SLB: Jonas Föhrenbach
+SĞB: Omar Traoré
+DOS: Jan Schöppner
+MO: Niklas Dorsch, Adrian Beck
+OOS: Paul Wanner
+SĞK: Mathias Honsak
+SLK: Eren Dinkçi
+SNT: Tim Kleindienst
+SV ELVERSBERG
+KL: Nicolas Kristof, Frank Lehmann
+STP: Frederik Jäkel, Robin Fellhauer
+SLB: Maurice Neubauer
+SĞB: Lukas Pinckert
+DOS: Carlo Sickinger
+MO: Semih Şahin, Luca Schnellbacher
+OOS: Jannik Rochelt
+SĞK: Fisnik Asllani
+SLK: Joseph Boyamba
+SNT: Kevin Koffi
+SÜPER LİG
+BEŞİKTAŞ
+KL: Ahmet Sami Bircan, Alexander Nübel, Doğan Alemdar, Emir Yaşar
+STP: Emmanuel Agbadou, Emirhan Topçu, Tiago Djaló, Ümit Akdağ, Taylan Bulut
+SLB: Kassoum Ouattara, Yasin Özcan, Rıdvan Yılmaz
+SĞB: Michael Murillo
+DOS: Wilfred Ndidi, Salih Özcan
+MO: Orkun Kökçü, Kartal Kayra Yılmaz
+OOS: Hyeongyu Oh, Junior Olaitan, İlhan Fakılı
+SĞK: Milot Rashica, Václav Černý
+SLK: Can Keleş, Ernest Poku, Leandro Trossard
+SNT: Dušan Vlahović, Semih Kılıçsoy, Ciro Immobile
+FENERBAHÇE
+KL: Mert Günok, Ederson, Tarık Çetin, Ömer Yiğit Tiryakigil
+STP: Milan Škriniar, Nathan Aké, Yiğit Efe Demir
+SLB: Archie Brown, Levent Mercan, Çağrı Hakan Balta
+SĞB: Mert Müldür, Nelson Semedo, Ognjen Mimović
+DOS: İsmail Yüksek, N'Golo Kanté, Bartuğ Elmaz
+MO: Fred, Mert Hakan Yandaş, Mattéo Guendouzi, Sebastian Szymański
+OOS: Marco Asensio
+SĞK: İrfan Can Kahveci, Mason Greenwood, Oğuz Aydın
+SLK: Kerem Aktürkoğlu, Dorgeles Nene, Alaettin Ekici, Allan Saint-Maximin
+SNT: Romelu Lukaku, Vedat Muriqi, Edin Dzeko, Youssef En-Nesyri
+GALATASARAY
+KL: Uğurcan Çakır, Günay Güvenç, Jankat Yılmaz
+STP: Davinson Sánchez, Abdülkerim Bardakcı, Arda Ünyay, El Chadaille Bitshiabu
+SLB: Ismail Jakobs, Eren Elmalı, Kazımcan Karataş, Berat Luş
+SĞB: Kaan Ayhan, Wilfried Singo
+DOS: Lucas Torreira, Mario Lemina
+MO: Gabriel Sara, İlkay Gündoğan, Lesley Ugochukwu, Eyüp Aydın
+OOS: Aleksei Batrakov, Dries Mertens
+SĞK: Barış Alper Yılmaz, Leroy Sané, Yunus Akgün
+SLK: Rafael Leão, Roland Sallai, Renato Sam-Nhaga
+SNT: Victor Osimhen, Deniz Daniel Gül, Mauro Icardi
+TRABZONSPOR
+KL: André Onana, Onuralp Çevikkan, Ahmet Doğan Yıldırım
+STP: Stefan Savić, Arsenii Batahov, Samet Akaydin, Ali Habeşoğlu
+SLB: Metehan Mimaroğlu
+SĞB: Wagner Pina, Sidny Cabral
+DOS: Okay Yokuşlu, Chibuike Nwaiwu
+MO: Ozan Tufan, Ruslan Malinovskyi, Tim Jabol-Folcarelli
+OOS: Cihan Çanak
+SĞK: Mohamed Salah, Mustafa Eskihellaç, Oğuzhan Ertem
+SLK: Doğuhan Aral Şimşir, Noah Saviolo
+SNT: Paul Onuachu, Umut Nayir, Ernest Muçi, Fabio Tavares, Franculino Djú, Melih Kabasakal
+KOCAELİSPOR
+KL: Onurcan Piri, Aleksandar Jovanović
+STP: Emir Ortakaya, Tanguy Zoukrou, Matej Maglica
+SLB: Muharrem Cinan, Massadio Haïdara
+SĞB: Anfernee Dijksteel, Tayfur Bingöl, Uğur Kaan Yıldız
+DOS: Manuel Cafumana, Onur Öztonga
+MO: Berkan Kutlu, Mahamadou Susoho
+OOS: Rigoberto Rivas, Tobias Gulliksen
+SĞK: Makana Baku, Bedirhan Yıldız, Serhat Öztaşdelen
+SLK: Gonçalo Sousa, Haydar Karataş, Mustafa Ege Bilim
+SNT: Bruno Petković, Florian Ayé, Daniel Agyei, Metehan Altunbaş, Arda Özyar, Hulisi Destici
+SAMSUNSPOR
+KL: Okan Kocuk, Bilal Bayazıt
+STP: Strahinja Eraković, Bedirhan Çetin, Igor Drapiński, Yunus Emre Çift
+SLB: Logi Tomasson, Enes Albak
+SĞB: Haluk Mustafa Tan, Josafat Mendes
+DOS: Celil Yüksel, Elliot Watt
+MO: Afonso Sousa, Yalçın Kayan
+OOS: Samed Onur, Efe Yiğit Üstün
+SĞK: Elayis Tavşan, Tanguy Coulibaly, Yirigue Sekongo
+SLK: Emre Kılınç, Saikuba Jarju, Muhammet Talha Akyüz
+SNT: Mohamed Bayo, Fatih Kaya, Gabriele Guarino, Kouadou Assoumou, Oskar Skovbjerg
+        `;
+
+        let currentLeague = "", currentTeam = "";
+        const lines = rawData.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        lines.forEach(line => {
+            if (["PREMIER LEAGUE", "LA LIGA", "SERIE A", "LEAGUE 1", "BUNDESLIGA", "SÜPER LİG"].includes(line)) { currentLeague = line; return; }
+            if (line === line.toUpperCase() && !line.includes(':')) { currentTeam = line; return; }
+            if (line.includes(':')) {
+                let parts = line.split(':'); let rawPos = parts[0].trim(); let names = parts[1].split(',').map(n => n.trim());
+                let gamePos = posMap[rawPos] || "CM";
+                names.forEach(n => playersData.push({
+                    name: n, pos: gamePos, team: currentTeam, league: currentLeague, 
+                    rat: generateRating(n, currentTeam), wiki: n.replace(/ /g, '_')
+                }));
+            }
+        });
+
+        // --- 20 DİZİLİŞ ---
+        const formationsList = [
+            { name: "4-3-3 (Ofansif)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CM",t:50,l:30}, {p:"CM",t:50,l:70}, {p:"CAM",t:35,l:50}, {p:"LW",t:15,l:20}, {p:"ST",t:10,l:50}, {p:"RW",t:15,l:80} ]},
+            { name: "4-3-3 (Defansif)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:55,l:35}, {p:"CDM",t:55,l:65}, {p:"CM",t:40,l:50}, {p:"LW",t:15,l:20}, {p:"ST",t:10,l:50}, {p:"RW",t:15,l:80} ]},
+            { name: "4-3-3 (Düz)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CM",t:45,l:25}, {p:"CM",t:48,l:50}, {p:"CM",t:45,l:75}, {p:"LW",t:15,l:20}, {p:"ST",t:10,l:50}, {p:"RW",t:15,l:80} ]},
+            { name: "4-4-2 (Klasik)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"LW",t:40,l:15}, {p:"CM",t:45,l:35}, {p:"CM",t:45,l:65}, {p:"RW",t:40,l:85}, {p:"ST",t:12,l:35}, {p:"ST",t:12,l:65} ]},
+            { name: "4-4-2 (Elmas)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:55,l:50}, {p:"CM",t:45,l:25}, {p:"CM",t:45,l:75}, {p:"CAM",t:30,l:50}, {p:"ST",t:12,l:35}, {p:"ST",t:12,l:65} ]},
+            { name: "4-2-3-1 (Geniş)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:55,l:35}, {p:"CDM",t:55,l:65}, {p:"LW",t:30,l:20}, {p:"CAM",t:32,l:50}, {p:"RW",t:30,l:80}, {p:"ST",t:10,l:50} ]},
+            { name: "4-2-3-1 (Dar)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:55,l:35}, {p:"CDM",t:55,l:65}, {p:"CAM",t:32,l:25}, {p:"CAM",t:30,l:50}, {p:"CAM",t:32,l:75}, {p:"ST",t:10,l:50} ]},
+            { name: "3-5-2 (Klasik)", pos: [ {p:"GK",t:88,l:50}, {p:"CB",t:72,l:20}, {p:"CB",t:75,l:50}, {p:"CB",t:72,l:80}, {p:"CDM",t:55,l:35}, {p:"CDM",t:55,l:65}, {p:"LW",t:35,l:15}, {p:"CAM",t:35,l:50}, {p:"RW",t:35,l:85}, {p:"ST",t:12,l:35}, {p:"ST",t:12,l:65} ]},
+            { name: "3-4-3 (Düz)", pos: [ {p:"GK",t:88,l:50}, {p:"CB",t:72,l:20}, {p:"CB",t:75,l:50}, {p:"CB",t:72,l:80}, {p:"LW",t:45,l:15}, {p:"CM",t:48,l:35}, {p:"CM",t:48,l:65}, {p:"RW",t:45,l:85}, {p:"LW",t:15,l:20}, {p:"ST",t:10,l:50}, {p:"RW",t:15,l:80} ]},
+            { name: "5-3-2 (Defansif)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:65,l:10}, {p:"CB",t:72,l:30}, {p:"CB",t:75,l:50}, {p:"CB",t:72,l:70}, {p:"RB",t:65,l:90}, {p:"CM",t:45,l:30}, {p:"CM",t:48,l:50}, {p:"CM",t:45,l:70}, {p:"ST",t:15,l:35}, {p:"ST",t:15,l:65} ]},
+            { name: "5-2-3 (Kanatlı)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:65,l:10}, {p:"CB",t:72,l:30}, {p:"CB",t:75,l:50}, {p:"CB",t:72,l:70}, {p:"RB",t:65,l:90}, {p:"CM",t:45,l:35}, {p:"CM",t:45,l:65}, {p:"LW",t:15,l:20}, {p:"ST",t:10,l:50}, {p:"RW",t:15,l:80} ]},
+            { name: "4-1-4-1", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:58,l:50}, {p:"LW",t:40,l:15}, {p:"CM",t:40,l:35}, {p:"CM",t:40,l:65}, {p:"RW",t:40,l:85}, {p:"ST",t:12,l:50} ]},
+            { name: "4-5-1 (Ofansif)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CM",t:52,l:50}, {p:"LW",t:35,l:15}, {p:"CAM",t:32,l:35}, {p:"CAM",t:32,l:65}, {p:"RW",t:35,l:85}, {p:"ST",t:12,l:50} ]},
+            { name: "4-5-1 (Defansif)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:52,l:30}, {p:"CDM",t:55,l:50}, {p:"CDM",t:52,l:70}, {p:"LW",t:35,l:20}, {p:"RW",t:35,l:80}, {p:"ST",t:12,l:50} ]},
+            { name: "4-2-2-2", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:50,l:35}, {p:"CDM",t:50,l:65}, {p:"CAM",t:30,l:25}, {p:"CAM",t:30,l:75}, {p:"ST",t:12,l:35}, {p:"ST",t:12,l:65} ]},
+            { name: "3-1-4-2", pos: [ {p:"GK",t:88,l:50}, {p:"CB",t:72,l:20}, {p:"CB",t:75,l:50}, {p:"CB",t:72,l:80}, {p:"CDM",t:60,l:50}, {p:"LW",t:40,l:15}, {p:"CM",t:42,l:35}, {p:"CM",t:42,l:65}, {p:"RW",t:40,l:85}, {p:"ST",t:12,l:35}, {p:"ST",t:12,l:65} ]},
+            { name: "5-4-1", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:65,l:10}, {p:"CB",t:72,l:30}, {p:"CB",t:75,l:50}, {p:"CB",t:72,l:70}, {p:"RB",t:65,l:90}, {p:"LW",t:40,l:20}, {p:"CM",t:42,l:40}, {p:"CM",t:42,l:60}, {p:"RW",t:40,l:80}, {p:"ST",t:15,l:50} ]},
+            { name: "4-3-2-1 (Çam)", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CM",t:50,l:25}, {p:"CM",t:52,l:50}, {p:"CM",t:50,l:75}, {p:"CAM",t:30,l:35}, {p:"CAM",t:30,l:65}, {p:"ST",t:10,l:50} ]},
+            { name: "3-4-2-1", pos: [ {p:"GK",t:88,l:50}, {p:"CB",t:72,l:20}, {p:"CB",t:75,l:50}, {p:"CB",t:72,l:80}, {p:"LW",t:45,l:15}, {p:"CM",t:48,l:35}, {p:"CM",t:48,l:65}, {p:"RW",t:45,l:85}, {p:"CAM",t:25,l:35}, {p:"CAM",t:25,l:65}, {p:"ST",t:10,l:50} ]},
+            { name: "4-1-2-1-2", pos: [ {p:"GK",t:88,l:50}, {p:"LB",t:70,l:15}, {p:"CB",t:72,l:35}, {p:"CB",t:72,l:65}, {p:"RB",t:70,l:85}, {p:"CDM",t:55,l:50}, {p:"LW",t:40,l:20}, {p:"RW",t:40,l:80}, {p:"CAM",t:30,l:50}, {p:"ST",t:12,l:35}, {p:"ST",t:12,l:65} ]}
+        ];
+
+        let currentSlots = [], activeSlotId = null, filledCount = 0;
+        let settings = { sfx: true, music: false };
+        let draftOptions = [], modalState = 'pick', selectedIndex = -1;
+        let audioCtx, bgMusicOscillators = [], isMusicPlaying = false;
+
+        function initFormations() {
+            const list = document.getElementById('formation-list');
+            formationsList.forEach(f => {
+                const btn = document.createElement('button');
+                btn.innerText = f.name; btn.onclick = () => startGame(f.name, f.pos); list.appendChild(btn);
+            });
+        }
+        initFormations();
+
+        // --- AKSİYON MÜZİĞİ VE SESLER ---
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (!settings.sfx) return; initAudio();
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'flip') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(800, now + 1.0); // Ses süresi uzatıldı
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+                osc.start(now); osc.stop(now + 1.0);
+            } else if (type === 'bad') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(80, now + 0.4);
+                gain.gain.setValueAtTime(0.4, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'success') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(659, now + 0.15); osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            }
+        }
+
+        function toggleMusic() {
+            if (!settings.music) {
+                if (bgMusicOscillators.length) { bgMusicOscillators.forEach(o => { try{o.stop();}catch(e){} }); bgMusicOscillators = []; }
+                isMusicPlaying = false; return;
+            }
+            if(isMusicPlaying) return;
+            initAudio(); isMusicPlaying = true;
+            
+            // Aksiyon Dolu Tansiyon Müziği (Kick & Bass Arpej)
+            let noteIndex = 0;
+            function loopMusic() {
+                if (!settings.music) return;
+                let now = audioCtx.currentTime;
+                
+                if (noteIndex % 4 === 0) {
+                    let kick = audioCtx.createOscillator(); let kickGain = audioCtx.createGain();
+                    kick.connect(kickGain); kickGain.connect(audioCtx.destination);
+                    kick.frequency.setValueAtTime(150, now); kick.frequency.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    kickGain.gain.setValueAtTime(0.6, now); kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    kick.start(now); kick.stop(now + 0.1); bgMusicOscillators.push(kick);
+                }
+                
+                let bass = audioCtx.createOscillator(); let bassGain = audioCtx.createGain();
+                bass.type = 'sawtooth';
+                let freqs = [110, 110, 130.81, 110, 146.83, 110, 130.81, 110];
+                bass.frequency.setValueAtTime(freqs[noteIndex % freqs.length], now);
+                bass.connect(bassGain); bassGain.connect(audioCtx.destination);
+                bassGain.gain.setValueAtTime(0.1, now); bassGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                bass.start(now); bass.stop(now + 0.1); bgMusicOscillators.push(bass);
+                
+                setTimeout(() => { bgMusicOscillators = bgMusicOscillators.filter(o => o.playbackState !== 3); }, 200);
+                
+                noteIndex++;
+                setTimeout(loopMusic, 130);
+            }
+            loopMusic();
+        }
+
+        function showScreen(screenId) { playSound('click'); document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); if(screenId === 'screen-history') loadHistory(); }
+        function toggleSetting(key) { playSound('click'); settings[key] = document.getElementById('setting-' + key).checked; if(key === 'music') toggleMusic(); }
+        function changeTheme(themeName) { playSound('click'); document.documentElement.setAttribute('data-theme', themeName); }
+        function goToFormation() { showScreen('screen-formation'); }
+        function showExitModal() { playSound('click'); document.getElementById('exit-modal').style.display = 'flex'; }
+        function closeExitModal() { playSound('click'); document.getElementById('exit-modal').style.display = 'none'; }
+        function quitGame() { playSound('bad'); document.getElementById('exit-modal').style.display = 'none'; showScreen('screen-main'); }
+
+        function loadHistory() {
+            const historyList = document.getElementById('history-list'); historyList.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('draftHistoryFinal')) || [];
+            if(history.length === 0) { historyList.innerHTML = '<p style="text-align:center;">Henüz oynanmadı.</p>'; return; }
+            history.sort((a,b) => b.score - a.score);
+            history.forEach((item, index) => { historyList.innerHTML += `<div class="history-item"><span><b>#${index+1}</b> ${item.formation}</span><span style="color:var(--primary); font-weight:bold;">${item.score} Ryt</span></div>`; });
+        }
+        function clearHistory() { if(confirm("Geçmiş silinecek emin misin?")) { localStorage.removeItem('draftHistoryFinal'); loadHistory(); playSound('click'); } }
+
+        function startGame(formationName, positions) {
+            playSound('click'); document.getElementById('ingame-formation-name').innerText = formationName;
+            filledCount = 0; currentSlots = [];
+            const pitch = document.getElementById('game-pitch');
+            pitch.innerHTML = '<div class="pitch-line-center"></div><div class="pitch-circle"></div>';
+            document.getElementById('finish-btn').style.display = 'none';
+
+            positions.forEach((posObj, index) => {
+                const slotId = 'slot-' + index;
+                currentSlots.push({ id: slotId, posTarget: posObj.p, player: null });
+                const slotDiv = document.createElement('div'); slotDiv.className = 'player-slot'; slotDiv.id = slotId;
+                slotDiv.style.top = posObj.t + '%'; slotDiv.style.left = posObj.l + '%';
+                slotDiv.innerHTML = `<span class="slot-pos">${posObj.p}</span><span class="slot-name" style="margin-bottom:20px;">+</span>`;
+                slotDiv.onclick = () => openDraftModal(slotId, posObj.p);
+                pitch.appendChild(slotDiv);
+            });
+            showScreen('screen-game');
+        }
+
+        async function getPlayerImage(wikiTitle, fallbackName) {
+            try {
+                const res = await fetch(`https://tr.wikipedia.org/w/api.php?action=query&titles=${wikiTitle}&prop=pageimages&format=json&pithumbsize=400&origin=*`);
+                const data = await res.json();
+                const pages = data.query.pages; const pageId = Object.keys(pages)[0];
+                if(pageId != -1 && pages[pageId].thumbnail) return pages[pageId].thumbnail.source;
+            } catch(e) {}
+            return `https://ui-avatars.com/api/?background=random&color=fff&name=${fallbackName.replace(/ /g, '+')}&size=200&bold=true`;
+        }
+
+        async function openDraftModal(slotId, positionTarget) {
+            playSound('click');
+            const slotData = currentSlots.find(s => s.id === slotId); if(slotData.player != null) return; 
+
+            activeSlotId = slotId; modalState = 'pick'; selectedIndex = -1;
+            document.getElementById('draft-feedback').innerText = ''; document.getElementById('draft-confirm-btn').style.display = 'none';
+            
+            const optionsContainer = document.getElementById('draft-options');
+            optionsContainer.innerHTML = '<p style="color:white; font-weight:bold;">Oyuncular Aranıyor...</p>';
+            document.getElementById('draft-modal').style.display = 'flex';
+
+            let allowedPos = posGroups[positionTarget] || [positionTarget];
+            let availablePlayers = playersData.filter(p => allowedPos.includes(p.pos));
+            if(availablePlayers.length < 3) availablePlayers = playersData;
+
+            const selectedNames = currentSlots.filter(s => s.player).map(s => s.player.name);
+            availablePlayers = availablePlayers.filter(p => !selectedNames.includes(p.name));
+
+            const shuffled = availablePlayers.sort(() => 0.5 - Math.random());
+            draftOptions = shuffled.slice(0, 3);
+            
+            draftOptions[0].imgUrl = await getPlayerImage(draftOptions[0].wiki, draftOptions[0].name);
+            renderDraftCards();
+        }
+
+        function renderDraftCards() {
+            const optionsContainer = document.getElementById('draft-options'); optionsContainer.innerHTML = '';
+            
+            draftOptions.forEach((player, index) => {
+                const card = document.createElement('div'); card.className = 'draft-card';
+                let isFlipped = (modalState === 'pick' && index === 0) || (modalState === 'reveal');
+                let preRevealed = (modalState === 'pick' && index === 0);
+
+                // pre-revealed class'ı açık gelen kartın silik-net efektine girmesini engeller
+                card.innerHTML = `
+                    <div class="card-inner ${isFlipped ? 'flipped' : ''} ${preRevealed ? 'pre-revealed' : ''}">
+                        <div class="card-front"><div class="q-mark">?</div></div>
+                        <div class="card-back">
+                            <div class="rating">${player.rat}</div>
+                            <div class="pos">${player.pos}</div>
+                            <img src="${player.imgUrl || ''}" class="shield-clip" alt="${player.name}">
+                            <div class="name">${player.name}</div>
+                            <div class="team-info">${player.team}</div>
+                        </div>
+                    </div>
+                `;
+                
+                if (modalState === 'reveal') {
+                    if (index === selectedIndex) card.classList.add('selected');
+                    else {
+                        const maxRat = Math.max(...draftOptions.map(p => p.rat));
+                        if(player.rat > draftOptions[selectedIndex].rat && player.rat === maxRat) card.classList.add('missed-good'); 
+                        else card.classList.add('missed-bad');
+                    }
+                }
+                
+                card.onclick = () => handleCardClick(index);
+                optionsContainer.appendChild(card);
+            });
+        }
+
+        function handleCardClick(index) {
+            if(modalState !== 'pick') return;
+            playSound('flip'); modalState = 'reveal'; selectedIndex = index;
+            document.getElementById('draft-feedback').innerText = 'KARTLAR AÇILIYOR...'; document.getElementById('draft-feedback').style.color = 'white';
+            
+            const cards = document.querySelectorAll('.draft-card');
+            cards.forEach((card, i) => { if(i !== 0) card.querySelector('.card-inner').classList.add('flipped'); });
+
+            // Süre 600ms'den 1500ms'ye çıkarıldı ki yavaş animasyonla aynı anda bitsin
+            setTimeout(() => {
+                const selectedRat = draftOptions[selectedIndex].rat;
+                const maxRat = Math.max(...draftOptions.map(p => p.rat));
+                const feedbackEl = document.getElementById('draft-feedback');
+                
+                cards.forEach((card, i) => {
+                    if (i === selectedIndex) card.classList.add('selected');
+                    else {
+                        if(draftOptions[i].rat > selectedRat && draftOptions[i].rat === maxRat) card.classList.add('missed-good');
+                        else card.classList.add('missed-bad');
+                    }
+                });
+
+                if(selectedRat === maxRat) {
+                    playSound('success'); feedbackEl.innerText = '🔥 HARİKA SEÇİM!'; feedbackEl.style.color = '#10b981';
+                } else {
+                    playSound('bad'); feedbackEl.innerText = '❌ YILDIZI KAÇIRDIN!'; feedbackEl.style.color = '#ef4444';
+                }
+                document.getElementById('draft-confirm-btn').style.display = 'block';
+            }, 1500);
+
+            for(let i=1; i<3; i++) {
+                getPlayerImage(draftOptions[i].wiki, draftOptions[i].name).then(imgUrl => {
+                    draftOptions[i].imgUrl = imgUrl;
+                    const imgEl = cards[i].querySelector('.shield-clip');
+                    if(imgEl) imgEl.src = imgUrl;
+                });
+            }
+        }
+
+        function confirmCardSelection() {
+            playSound('click'); const player = draftOptions[selectedIndex];
+            const slotData = currentSlots.find(s => s.id === activeSlotId); slotData.player = player;
+
+            const slotDiv = document.getElementById(activeSlotId); slotDiv.classList.add('filled');
+            slotDiv.innerHTML = `
+                <img src="${player.imgUrl}" class="slot-img shield-clip">
+                <span class="slot-pos">${player.pos}</span>
+                <span class="slot-rating">${player.rat}</span>
+                <span class="slot-name">${player.name}</span>
+            `;
+
+            document.getElementById('draft-modal').style.display = 'none'; activeSlotId = null; filledCount++;
+            if(filledCount === 11) document.getElementById('finish-btn').style.display = 'block'; 
+        }
+
+        function finishGame() {
+            playSound('success');
+            let totalRating = 0; currentSlots.forEach(slot => { totalRating += slot.player.rat; });
+            let avgRating = Math.round(totalRating / 11);
+            document.getElementById('final-avg').innerText = avgRating;
+            
+            let history = JSON.parse(localStorage.getItem('draftHistoryFinal')) || [];
+            history.push({ formation: document.getElementById('ingame-formation-name').innerText, score: avgRating });
+            localStorage.setItem('draftHistoryFinal', JSON.stringify(history));
+            
+            showScreen('screen-result');
+        }
+    </script>
+</body>
+</html>
